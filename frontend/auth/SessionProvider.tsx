@@ -9,13 +9,16 @@ type SignUpResult = {
   requiresEmailConfirmation: boolean;
   alreadyRegistered: boolean;
 };
+type SignUpOptions = {
+  fullName?: string;
+};
 
 interface AuthContextType {
   session: Session | null;
   user: User | null;
   loading: boolean;
   signIn: (email: string, password: string) => Promise<SignInResult>;
-  signUp: (email: string, password: string) => Promise<SignUpResult>;
+  signUp: (email: string, password: string, options?: SignUpOptions) => Promise<SignUpResult>;
   signOut: () => Promise<void>;
 }
 
@@ -55,32 +58,38 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
-  const signUp = async (email: string, password: string): Promise<SignUpResult> => {
+  const signUp = async (
+    email: string,
+    password: string,
+    options?: SignUpOptions
+  ): Promise<SignUpResult> => {
     const normalizedEmail = email.trim().toLowerCase();
-    console.log('[SignUp] Attempting signup for:', normalizedEmail);
+    const normalizedName = options?.fullName?.trim();
+
+    let timezone = 'UTC';
+    try {
+      timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+    } catch {
+      timezone = 'UTC';
+    }
+
+    const metadata: Record<string, string> = {
+      role: 'elder',
+      timezone,
+    };
+
+    if (normalizedName) {
+      metadata.full_name = normalizedName;
+    }
 
     const { data, error } = await supabase.auth.signUp({
       email: normalizedEmail,
       password,
       options: {
         emailRedirectTo: getAuthRedirectUrl(),
+        data: metadata,
       },
     });
-
-    console.log('[SignUp] Supabase response:', {
-      hasUser: !!data?.user,
-      userId: data?.user?.id,
-      hasSession: !!data?.session,
-      error: error?.message ?? null,
-      identitiesCount: data?.user?.identities?.length ?? 0,
-    });
-
-    if (data?.user) {
-      console.log('[SignUp] User created in auth.users. Check Supabase Dashboard → Authentication → Users');
-    }
-    if (error) {
-      console.error('[SignUp] Error:', error.message, error);
-    }
 
     const alreadyRegistered =
       !error && !!data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0;
