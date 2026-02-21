@@ -1,13 +1,38 @@
 import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 
 import { HelloWave } from '@/components/hello-wave';
 import ParallaxScrollView from '@/components/parallax-scroll-view';
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+import { Link, router } from 'expo-router';
+import { useAuth } from '@/auth/SessionProvider';
+import { Colors } from '@/constants/theme';
+import { useColorScheme } from '@/hooks/use-color-scheme';
 
 export default function HomeScreen() {
+  const { user, signOut } = useAuth();
+  const colorScheme = useColorScheme();
+  const colors = Colors[colorScheme ?? 'light'];
+
+  const handleSignOut = async () => {
+    Alert.alert(
+      'Sign Out',
+      'Are you sure you want to sign out?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Sign Out',
+          style: 'destructive',
+          onPress: async () => {
+            await signOut();
+            router.replace('/login');
+          },
+        },
+      ]
+    );
+  };
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
@@ -20,6 +45,17 @@ export default function HomeScreen() {
       <ThemedView style={styles.titleContainer}>
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
+        {user && (
+          <ThemedView style={styles.userInfo}>
+            <ThemedText type="subtitle">Signed in as: {user.email}</ThemedText>
+            <TouchableOpacity
+              style={[styles.signOutButton, { backgroundColor: colors.tint }]}
+              onPress={handleSignOut}
+            >
+              <ThemedText style={styles.signOutButtonText}>Sign Out</ThemedText>
+            </TouchableOpacity>
+          </ThemedView>
+        )}
       </ThemedView>
       <ThemedView style={styles.stepContainer}>
         <ThemedText type="subtitle">Step 1: Try it</ThemedText>
@@ -83,6 +119,23 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 8,
+    flexWrap: 'wrap',
+  },
+  userInfo: {
+    width: '100%',
+    marginTop: 16,
+    alignItems: 'center',
+    gap: 12,
+  },
+  signOutButton: {
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+  },
+  signOutButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
   stepContainer: {
     gap: 8,
