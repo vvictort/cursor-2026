@@ -21,7 +21,7 @@ This project is mobile-first. Web (`localhost`) is only used as a local developm
 
    Keep `localhost` URLs for local web testing only. The mobile deep-link URLs are the app behavior that matters for real usage.
 
-3. Run `frontend/supabase/rls_private_notes.sql` in Supabase SQL editor.
+3. Run `frontend/supabase/elder_connections.sql` in Supabase SQL editor.
 
 4. Start Expo:
 
@@ -33,10 +33,11 @@ This project is mobile-first. Web (`localhost`) is only used as a local developm
    - Web: press `w` in Expo terminal (`http://localhost:8081`)
    - Phone: scan the Expo QR code in Expo Go
 
-6. Validate RLS from the Dashboard tab:
-   - Sign in as user A and add notes
-   - Sign out, sign in as user B on phone or web
-   - Confirm user B cannot see user A notes
+6. Validate elder + loved-one storage from the Dashboard tab:
+   - Sign up a new user (they are created as role `elder`)
+   - Add loved one email/name/relationship
+   - Confirm rows are written in Supabase table `connections`
+   - Sign in with another user and confirm they cannot read or modify the first elder's connections (RLS)
 
 ### Signup behavior notes
 
