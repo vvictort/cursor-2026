@@ -1,0 +1,14 @@
+{
+  "name": "cursor-2026",
+  "version": "1.0.0",
+  "private": true,
+  "description": "React Native mobile app with Express backend",
+  "scripts": {
+    "frontend": "npm run start --prefix frontend",
+    "backend": "npm run start --prefix backend",
+    "backend:dev": "npm run dev --prefix backend",
+    "android": "npm run android --prefix frontend",
+    "ios": "npm run ios --prefix frontend",
+    "web": "npm run web --prefix frontend"
+  }
+}
