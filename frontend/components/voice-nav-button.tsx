@@ -6,7 +6,7 @@ import * as Haptics from 'expo-haptics';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
 const TAB_BAR_HEIGHT = 56;
-const BUTTON_SIZE = 56;
+const BUTTON_SIZE = 64;
 const FLOATING_OFFSET = 12;
 
 /**
@@ -44,19 +44,23 @@ export function VoiceNavButton() {
         style={({ pressed }) => [
           styles.button,
           {
-            backgroundColor: colors.tint,
+            backgroundColor: isListening ? '#dc2626' : colors.tint,
             opacity: pressed ? 0.9 : 1,
             borderColor: colors.background,
           },
         ]}
         accessibilityRole="button"
-        accessibilityLabel="Voice navigation"
-        accessibilityHint="Use your voice to change tabs. Say phrases like 'Go to Home' or 'Open Explore'."
+        accessibilityLabel={isListening ? 'Stop listening' : 'Voice navigation'}
+        accessibilityHint={
+          isListening
+            ? 'Double tap to stop voice recognition'
+            : "Use your voice to change tabs. Say phrases like 'Go to Home' or 'Open Explore'."
+        }
         accessibilityState={{ expanded: isListening }}
       >
         <IconSymbol
-          name="mic.fill"
-          size={28}
+          name={isListening ? 'stop.circle.fill' : 'mic.fill'}
+          size={40}
           color={colors.background}
         />
       </Pressable>

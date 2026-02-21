@@ -16,6 +16,19 @@ export default function HomeScreen() {
   const colors = Colors[colorScheme ?? 'light'];
 
   const handleSignOut = async () => {
+    const performSignOut = async () => {
+      await signOut();
+      router.replace('/login');
+    };
+
+    // Alert.alert is a no-op on web; use window.confirm instead
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm('Are you sure you want to sign out?')) {
+        await performSignOut();
+      }
+      return;
+    }
+
     Alert.alert(
       'Sign Out',
       'Are you sure you want to sign out?',
@@ -24,10 +37,7 @@ export default function HomeScreen() {
         {
           text: 'Sign Out',
           style: 'destructive',
-          onPress: async () => {
-            await signOut();
-            router.replace('/login');
-          },
+          onPress: performSignOut,
         },
       ]
     );

@@ -164,7 +164,8 @@ export function useVoiceNavigation() {
 
   const stopListening = useCallback(() => {
     try {
-      ExpoSpeechRecognitionModule.stop();
+      // Use abort() for immediate toggle-off; stop() waits for final result
+      ExpoSpeechRecognitionModule.abort();
     } catch {
       // ignore
     }
