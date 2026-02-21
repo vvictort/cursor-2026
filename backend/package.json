@@ -2,16 +2,22 @@
   "name": "cursor-2026-backend",
   "version": "1.0.0",
   "description": "Express API for cursor-2026 mobile app",
-  "main": "src/index.js",
+  "main": "src/server.ts",
   "type": "module",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "node --watch src/index.js"
+    "start": "tsx src/server.ts",
+    "dev": "tsx watch src/server.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^17.3.1",
     "express": "^4.21.0",
+    "express-async-errors": "^3.1.1",
     "twilio": "^5.12.2"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
   }
 }
