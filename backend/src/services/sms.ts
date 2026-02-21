@@ -7,6 +7,7 @@ export interface SendSmsOptions {
 }
 
 export async function sendSms({ to = env.DEMO_TO_PHONE, body }: SendSmsOptions) {
+  console.log('[SMS] sendSms called', { to, body });
   const message = await twilioClient.messages.create({
     body,
     from: env.TWILIO_PHONE_NUMBER,
