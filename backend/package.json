@@ -1,0 +1,15 @@
+{
+  "name": "cursor-2026-backend",
+  "version": "1.0.0",
+  "description": "Express API for cursor-2026 mobile app",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0"
+  }
+}
