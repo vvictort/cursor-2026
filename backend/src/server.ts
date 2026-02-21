@@ -1,11 +1,11 @@
-import app from "./app";
-import { env } from "./config/env";
+import app from './app.js';
+import { env } from './config/env.js';
+import { startWindowScheduler } from './scheduler/checkinWindow.js';
 
-app.listen(env.port, (error?: Error) => {
-  if (error) {
-    console.error("Failed to start backend API:", error.message);
-    process.exit(1);
-  }
+startWindowScheduler();
 
-  console.log(`Backend API listening on http://localhost:${env.port}`);
+setInterval(() => console.log('[tick]', new Date().toISOString()), 10_000);
+
+app.listen(env.PORT, () => {
+  console.log(`Server running at http://localhost:${env.PORT}`);
 });
