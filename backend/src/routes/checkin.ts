@@ -2,97 +2,36 @@ import { Router, Request, Response } from 'express';
 import { sendSms } from '../services/sms.js';
 import { env } from '../config/env.js';
 import { isValidPersonId } from '../utils/validate.js';
-import { FIVE_MIN_MS } from '../utils/time.js';
-
-// Demo window: 5 min. Swap to e.g. 24 * 60 * 60 * 1000 for prod.
-const WINDOW_MS = FIVE_MIN_MS;
+import { markCheckedIn, getWindowStatus, WINDOW_MS, checkedInWindow } from '../scheduler/checkinWindow.js';
 
 const router = Router();
 
-type PersonSchedule = {
-  personId: string;
-  deadlineMs: number;
-  timer: ReturnType<typeof setTimeout>;
-  lastCheckinMs: number | null;
-  lastAlertMs: number | null;
-  windowIndex: number;
-};
+// GET /api/checkin/window — debug: current scheduler state
+router.get('/checkin/window', (_req: Request, res: Response) => {
+  res.json(getWindowStatus());
+});
 
-const schedules = new Map<string, PersonSchedule>();
-
-function scheduleOrReschedule(personId: string, reason: 'enroll' | 'checkin' | 'fired'): void {
-  const existing = schedules.get(personId);
-  if (existing) clearTimeout(existing.timer);
-
-  const prevIndex = existing?.windowIndex ?? 0;
-  const nextIndex = prevIndex + 1;
-  const deadlineMs = Date.now() + WINDOW_MS;
-
-  const myIndex = nextIndex;
-
-  const timer = setTimeout(async () => {
-    const current = schedules.get(personId);
-    if (!current || current.windowIndex !== myIndex) return; // stale timer guard
-
-    console.log(`[checkin] timer fired for ${personId} (window ${myIndex})`);
-
-    const time = new Date().toLocaleTimeString('en-US', { hour12: false });
-    const body = `Check-in alert: ${personId} has not checked in within the window. (${time})`;
-    try {
-      await sendSms({ to: env.DEMO_TO_PHONE, body });
-      current.lastAlertMs = Date.now();
-    } catch (err) {
-      console.error(`[checkin] SMS failed for ${personId}:`, err);
-    }
-
-    scheduleOrReschedule(personId, 'fired');
-  }, WINDOW_MS);
-
-  const next: PersonSchedule = {
-    personId,
-    deadlineMs,
-    timer,
-    lastCheckinMs: existing?.lastCheckinMs ?? null,
-    lastAlertMs: existing?.lastAlertMs ?? null,
-    windowIndex: nextIndex,
-  };
-
-  schedules.set(personId, next);
-  console.log(`[checkin] scheduled window ${nextIndex} for ${personId} (reason=${reason}, deadline=${new Date(deadlineMs).toISOString()})`);
-}
-
-// Seed Andy on startup
-scheduleOrReschedule('Andy', 'enroll');
-
-router.get('/checkin/:personId', async (req: Request, res: Response) => {
+// GET /api/checkin/:personId — record a check-in
+router.get('/checkin/:personId', (req: Request, res: Response) => {
   const { personId } = req.params;
   if (!isValidPersonId(personId)) {
     res.status(400).json({ error: 'Invalid personId (max 64 chars)' });
     return;
   }
 
-  const isNew = !schedules.has(personId);
-  if (isNew) {
-    scheduleOrReschedule(personId, 'enroll');
-  }
+  markCheckedIn(personId);
+  console.log('[checkin] map state:', Object.fromEntries(checkedInWindow));
 
-  const schedule = schedules.get(personId)!;
-  schedule.lastCheckinMs = Date.now();
-
-  scheduleOrReschedule(personId, 'checkin');
-
-  const s = schedules.get(personId)!;
+  const now = Date.now();
   res.json({
-    personId: s.personId,
-    deadlineMs: s.deadlineMs,
-    deadline: new Date(s.deadlineMs).toISOString(),
-    lastCheckinMs: s.lastCheckinMs,
-    lastCheckin: s.lastCheckinMs ? new Date(s.lastCheckinMs).toISOString() : null,
-    lastAlertMs: s.lastAlertMs,
-    lastAlert: s.lastAlertMs ? new Date(s.lastAlertMs).toISOString() : null,
+    personId,
+    checkedIn: true,
+    serverTime: new Date(now).toISOString(),
+    windowMs: WINDOW_MS,
   });
 });
 
+// POST /api/checkin/:personId/notify — manual alert trigger
 router.post('/checkin/:personId/notify', async (req: Request, res: Response) => {
   const { personId } = req.params;
   if (!isValidPersonId(personId)) {
@@ -101,7 +40,8 @@ router.post('/checkin/:personId/notify', async (req: Request, res: Response) => 
   }
 
   try {
-    const body = `Check-in alert: ${personId} has not checked in within the window.`;
+    const time = new Date().toLocaleTimeString('en-US', { hour12: false });
+    const body = `Check-in alert: ${personId} has not checked in within the window. (${time})`;
     const result = await sendSms({ to: env.DEMO_TO_PHONE, body });
     res.json({ sid: result.sid, status: result.status });
   } catch (err) {
