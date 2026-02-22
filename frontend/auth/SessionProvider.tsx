@@ -1,7 +1,7 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { AuthError, Session, User } from '@supabase/supabase-js';
-import { supabase } from './supabase';
-import { getAuthRedirectUrl } from './redirect';
+import { AuthError, Session, User } from "@supabase/supabase-js";
+import React, { createContext, useContext, useEffect, useState } from "react";
+import { getAuthRedirectUrl } from "./redirect";
+import { supabase } from "./supabase";
 
 type SignInResult = { error: AuthError | null };
 type SignUpResult = {
@@ -30,12 +30,22 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setLoading(false);
-    });
+    // Get initial session safely
+    const initSession = async () => {
+      try {
+        const {
+          data: { session },
+        } = await supabase.auth.getSession();
+        setSession(session);
+        setUser(session?.user ?? null);
+      } catch (error) {
+        console.warn("Error getting session:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    initSession();
 
     // Listen for auth changes
     const {
@@ -58,23 +68,19 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
     return { error };
   };
 
-  const signUp = async (
-    email: string,
-    password: string,
-    options?: SignUpOptions
-  ): Promise<SignUpResult> => {
+  const signUp = async (email: string, password: string, options?: SignUpOptions): Promise<SignUpResult> => {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedName = options?.fullName?.trim();
 
-    let timezone = 'UTC';
+    let timezone = "UTC";
     try {
-      timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+      timezone = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
     } catch {
-      timezone = 'UTC';
+      timezone = "UTC";
     }
 
     const metadata: Record<string, string> = {
-      role: 'elder',
+      role: "elder",
       timezone,
     };
 
@@ -120,7 +126,7 @@ export function SessionProvider({ children }: { children: React.ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within a SessionProvider');
+    throw new Error("useAuth must be used within a SessionProvider");
   }
   return context;
 }

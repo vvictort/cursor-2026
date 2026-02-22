@@ -1,22 +1,32 @@
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import { Tabs } from "expo-router";
 import React from "react";
-import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { View } from "react-native";
 
+import { useAuth } from "@/auth/SessionProvider";
 import { HapticTab } from "@/components/haptic-tab";
+import { ThemedText } from "@/components/themed-text";
 
 export default function TabLayout() {
+  const { user } = useAuth();
+  const initial = user?.email ? user.email.charAt(0).toUpperCase() : "U";
+
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: "#22D3EE", // glass-cyan
-        tabBarInactiveTintColor: "#94A3B8", // glass-muted
+        tabBarActiveTintColor: "#0EA5E9", // bright sky blue
+        tabBarInactiveTintColor: "#64748B", // slate gray
         headerShown: false,
         tabBarButton: HapticTab,
         tabBarStyle: {
-          backgroundColor: "#0B1120", // glass-bg
+          backgroundColor: "#FFFFFF",
           borderTopWidth: 1,
-          borderTopColor: "rgba(255, 255, 255, 0.1)",
-          elevation: 0,
+          borderTopColor: "#E2E8F0",
+          elevation: 10,
+          shadowColor: "#000",
+          shadowOffset: { width: 0, height: -2 },
+          shadowOpacity: 0.05,
+          shadowRadius: 10,
           height: 85,
           paddingBottom: 25,
           paddingTop: 10,
@@ -49,10 +59,26 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="browse" // Assuming browse doesn't exist, we can just point to a placeholder or add it if needed
+        name="profile"
         options={{
-          title: "Browse",
-          tabBarIcon: ({ color }) => <MaterialIcons size={26} name="grid-view" color={color} />,
+          title: "Profile",
+          tabBarIcon: ({ color, focused }) => {
+            return (
+              <View
+                className="items-center justify-center rounded-full"
+                style={{
+                  width: 32,
+                  height: 32,
+                  backgroundColor: focused ? "#2563EB" : "#F1F5F9",
+                  borderColor: color,
+                  borderWidth: focused ? 2 : 1,
+                }}>
+                <ThemedText style={{ color: focused ? "#FFFFFF" : "#64748B", fontSize: 14, fontWeight: "bold" }}>
+                  {initial}
+                </ThemedText>
+              </View>
+            );
+          },
         }}
       />
     </Tabs>

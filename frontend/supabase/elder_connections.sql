@@ -37,6 +37,7 @@ create table if not exists public.connections (
   invite_email text,
   loved_one_name text,
   relationship text,
+  phone_number text,
   status public.connection_status not null default 'pending',
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
