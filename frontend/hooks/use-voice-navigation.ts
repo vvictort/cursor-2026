@@ -7,51 +7,66 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { AccessibilityInfo, Platform } from 'react-native';
 
 /**
- * Maps voice command phrases (normalized lowercase) to tab route paths.
- * Supports variations: "go to X", "open X", "X tab", "X".
+ * Tab routes and their display names for announcements.
+ * Matches the nav bar: Dashboard, My Health, Care, Browse.
  */
-const VOICE_TO_TAB: Record<string, string> = {
-  home: '/(tabs)',
-  explore: '/(tabs)/explore',
-  dashboard: '/(tabs)/dashboard',
-  settings: '/(tabs)/dashboard', // Map to dashboard if no dedicated settings tab
-  profile: '/(tabs)/dashboard', // Map to dashboard if no dedicated profile tab
-};
-
-/** Phrases to match for each tab (first match wins) */
-const TAB_PHRASES = [
-  { keys: ['home'], route: '/(tabs)' },
-  { keys: ['explore'], route: '/(tabs)/explore' },
-  { keys: ['dashboard', 'settings', 'profile'], route: '/(tabs)/dashboard' },
+const TAB_ROUTES: { route: string; displayName: string; phrases: string[] }[] = [
+  {
+    route: '/(tabs)/dashboard',
+    displayName: 'Dashboard',
+    phrases: ['dashboard', 'home'],
+  },
+  {
+    route: '/(tabs)',
+    displayName: 'My Health',
+    phrases: ['health', 'my health', 'index'],
+  },
+  {
+    route: '/(tabs)/explore',
+    displayName: 'Care',
+    phrases: ['care', 'explore'],
+  },
+  {
+    route: '/(tabs)/browse',
+    displayName: 'Browse',
+    phrases: ['browse'],
+  },
 ];
 
 function normalizeTranscript(text: string): string {
   return text.trim().toLowerCase().replace(/[.!?]/g, '');
 }
 
-function matchTabFromTranscript(transcript: string): string | null {
+function matchTabFromTranscript(transcript: string): { route: string; displayName: string } | null {
   const normalized = normalizeTranscript(transcript);
-  // Check for "go to X", "open X", "X tab" patterns
-  const patterns = [
-    /(?:go to|open|switch to|navigate to)\s+(\w+)/,
-    /(\w+)\s+tab/,
-    /^(\w+)$/,
-  ];
-  for (const pattern of patterns) {
-    const match = normalized.match(pattern);
-    if (match) {
-      const word = match[1];
-      for (const { keys, route } of TAB_PHRASES) {
-        if (keys.includes(word)) return route;
+
+  // Multi-word phrases first (e.g. "my health", "go to dashboard")
+  for (const { route, displayName, phrases } of TAB_ROUTES) {
+    for (const phrase of phrases) {
+      if (phrase.includes(' ')) {
+        if (normalized.includes(phrase)) return { route, displayName };
+      } else {
+        const patterns = [
+          new RegExp(`(?:go to|open|switch to|navigate to)\\s+${phrase}\\b`),
+          new RegExp(`\\b${phrase}\\s+tab`),
+          new RegExp(`^${phrase}$`),
+          new RegExp(`\\b${phrase}\\b`),
+        ];
+        for (const pattern of patterns) {
+          if (pattern.test(normalized)) return { route, displayName };
+        }
       }
     }
   }
-  // Direct word match
+
+  // Single-word match from transcript words
   const words = normalized.split(/\s+/);
   for (const word of words) {
-    const route = VOICE_TO_TAB[word];
-    if (route) return route;
+    for (const { route, displayName, phrases } of TAB_ROUTES) {
+      if (phrases.includes(word)) return { route, displayName };
+    }
   }
+
   return null;
 }
 
@@ -97,12 +112,11 @@ export function useVoiceNavigation() {
         if (!event.isFinal || navigatedRef.current) return;
         const transcript = event.results?.[0]?.transcript ?? '';
         if (!transcript) return;
-        const route = matchTabFromTranscript(transcript);
-        if (route) {
+        const match = matchTabFromTranscript(transcript);
+        if (match) {
           navigatedRef.current = true;
-          router.replace(route as never);
-          const tabName = route === '/(tabs)' ? 'Home' : route.split('/').pop() ?? '';
-          announceForAccessibility(`Navigated to ${tabName}`);
+          router.replace(match.route as never);
+          announceForAccessibility(`Navigated to ${match.displayName}`);
         }
       },
       [router]

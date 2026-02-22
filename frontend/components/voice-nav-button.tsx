@@ -5,7 +5,7 @@ import { useVoiceNavigation } from '@/hooks/use-voice-navigation';
 import * as Haptics from 'expo-haptics';
 import { Platform, Pressable, StyleSheet, View } from 'react-native';
 
-const TAB_BAR_HEIGHT = 56;
+const TAB_BAR_HEIGHT = 85;
 const BUTTON_SIZE = 64;
 const FLOATING_OFFSET = 12;
 
@@ -54,7 +54,7 @@ export function VoiceNavButton() {
         accessibilityHint={
           isListening
             ? 'Double tap to stop voice recognition'
-            : "Use your voice to change tabs. Say phrases like 'Go to Home' or 'Open Explore'."
+            : "Use your voice to change tabs. Say 'Dashboard', 'My Health', 'Care', or 'Browse'."
         }
         accessibilityState={{ expanded: isListening }}
       >

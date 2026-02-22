@@ -1,112 +1,165 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import MaterialIcons from "@expo/vector-icons/MaterialIcons";
+import { Pressable, ScrollView, View } from "react-native";
+import { Linking } from "react-native";
 
-import { Collapsible } from '@/components/ui/collapsible';
-import { ExternalLink } from '@/components/external-link';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { IconSymbol } from '@/components/ui/icon-symbol';
-import { Fonts } from '@/constants/theme';
+import { ThemedText } from "@/components/themed-text";
 
-export default function TabTwoScreen() {
+/**
+ * Care section for seniors – quick help, care team, reminders, and resources.
+ */
+
+const QUICK_HELP = [
+  { label: "Emergency", sublabel: "911", icon: "emergency" as const, tel: "911" },
+  { label: "Family", sublabel: "Call loved ones", icon: "family-restroom" as const },
+  { label: "Doctor", sublabel: "Primary care", icon: "medical-services" as const },
+  { label: "Pharmacy", sublabel: "Prescriptions", icon: "local-pharmacy" as const },
+];
+
+const CARE_REMINDERS = [
+  { label: "Medication", time: "8:00 AM", icon: "medication" as const },
+  { label: "Doctor Visit", time: "Tomorrow 2 PM", icon: "event" as const },
+  { label: "Caregiver Check-in", time: "Daily", icon: "person-search" as const },
+];
+
+const CARE_RESOURCES = [
+  { label: "Fall Prevention Tips", icon: "health-and-safety" as const },
+  { label: "Medicare & Benefits", icon: "account-balance" as const },
+  { label: "Senior Support Hotline", icon: "support-agent" as const },
+  { label: "Meal Delivery Info", icon: "restaurant" as const },
+];
+
+export default function CareScreen() {
+  const handleEmergency = () => {
+    Linking.openURL("tel:911");
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#D0D0D0', dark: '#353636' }}
-      headerImage={
-        <IconSymbol
-          size={310}
-          color="#808080"
-          name="chevron.left.forwardslash.chevron.right"
-          style={styles.headerImage}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText
-          type="title"
-          style={{
-            fontFamily: Fonts.rounded,
-          }}>
-          Explore
-        </ThemedText>
-      </ThemedView>
-      <ThemedText>This app includes example code to help you get started.</ThemedText>
-      <Collapsible title="File-based routing">
-        <ThemedText>
-          This app has two screens:{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">app/(tabs)/explore.tsx</ThemedText>
-        </ThemedText>
-        <ThemedText>
-          The layout file in <ThemedText type="defaultSemiBold">app/(tabs)/_layout.tsx</ThemedText>{' '}
-          sets up the tab navigator.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/router/introduction">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Android, iOS, and web support">
-        <ThemedText>
-          You can open this project on Android, iOS, and the web. To open the web version, press{' '}
-          <ThemedText type="defaultSemiBold">w</ThemedText> in the terminal running this project.
-        </ThemedText>
-      </Collapsible>
-      <Collapsible title="Images">
-        <ThemedText>
-          For static images, you can use the <ThemedText type="defaultSemiBold">@2x</ThemedText> and{' '}
-          <ThemedText type="defaultSemiBold">@3x</ThemedText> suffixes to provide files for
-          different screen densities
-        </ThemedText>
-        <Image
-          source={require('@/assets/images/react-logo.png')}
-          style={{ width: 100, height: 100, alignSelf: 'center' }}
-        />
-        <ExternalLink href="https://reactnative.dev/docs/images">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Light and dark mode components">
-        <ThemedText>
-          This template has light and dark mode support. The{' '}
-          <ThemedText type="defaultSemiBold">useColorScheme()</ThemedText> hook lets you inspect
-          what the user&apos;s current color scheme is, and so you can adjust UI colors accordingly.
-        </ThemedText>
-        <ExternalLink href="https://docs.expo.dev/develop/user-interface/color-themes/">
-          <ThemedText type="link">Learn more</ThemedText>
-        </ExternalLink>
-      </Collapsible>
-      <Collapsible title="Animations">
-        <ThemedText>
-          This template includes an example of an animated component. The{' '}
-          <ThemedText type="defaultSemiBold">components/HelloWave.tsx</ThemedText> component uses
-          the powerful{' '}
-          <ThemedText type="defaultSemiBold" style={{ fontFamily: Fonts.mono }}>
-            react-native-reanimated
-          </ThemedText>{' '}
-          library to create a waving hand animation.
-        </ThemedText>
-        {Platform.select({
-          ios: (
-            <ThemedText>
-              The <ThemedText type="defaultSemiBold">components/ParallaxScrollView.tsx</ThemedText>{' '}
-              component provides a parallax effect for the header image.
-            </ThemedText>
-          ),
-        })}
-      </Collapsible>
-    </ParallaxScrollView>
+    <View className="flex-1 bg-glass-bg">
+      <ScrollView
+        className="flex-1"
+        contentContainerClassName="px-5 pt-14 pb-32 gap-6"
+        showsVerticalScrollIndicator={false}>
+        <View>
+          <ThemedText className="text-2xl font-bold text-glass-text mb-1">Care</ThemedText>
+          <ThemedText className="text-base text-glass-muted">
+            Your care team, reminders, and quick help
+          </ThemedText>
+        </View>
+
+        {/* Quick Help */}
+        <View>
+          <ThemedText className="text-lg font-bold text-glass-text mb-4">Quick Help</ThemedText>
+          <View className="flex-row flex-wrap justify-between gap-y-4">
+            {QUICK_HELP.map((item) => (
+              <Pressable
+                key={item.label}
+                onPress={item.tel ? handleEmergency : undefined}
+                className="w-[48%] bg-glass-card border border-glass-border rounded-[20px] p-4 flex-row items-center gap-3 active:opacity-90">
+                <View className="w-12 h-12 rounded-full bg-glass-cyan/20 items-center justify-center">
+                  <MaterialIcons
+                    name={item.icon}
+                    size={26}
+                    color={item.label === "Emergency" ? "#FB7185" : "#22D3EE"}
+                  />
+                </View>
+                <View className="flex-1">
+                  <ThemedText className="text-glass-text font-bold text-[16px]">
+                    {item.label}
+                  </ThemedText>
+                  <ThemedText className="text-glass-muted text-sm">{item.sublabel}</ThemedText>
+                </View>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* Care Reminders */}
+        <View>
+          <ThemedText className="text-lg font-bold text-glass-text mb-4">Care Reminders</ThemedText>
+          <View className="gap-3">
+            {CARE_REMINDERS.map((item) => (
+              <View
+                key={item.label}
+                className="bg-glass-card border border-glass-border rounded-[18px] p-4 flex-row items-center gap-4">
+                <MaterialIcons name={item.icon} size={28} color="#22D3EE" />
+                <View className="flex-1">
+                  <ThemedText className="text-glass-text font-semibold text-[17px]">
+                    {item.label}
+                  </ThemedText>
+                  <ThemedText className="text-glass-muted text-sm mt-0.5">{item.time}</ThemedText>
+                </View>
+                <MaterialIcons name="chevron-right" size={24} color="#94A3B8" />
+              </View>
+            ))}
+          </View>
+        </View>
+
+        {/* My Care Team */}
+        <View>
+          <ThemedText className="text-lg font-bold text-glass-text mb-4">My Care Team</ThemedText>
+          <View className="bg-glass-card border border-glass-border rounded-[20px] p-4 gap-4">
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-glass-cyan/20 items-center justify-center">
+                <MaterialIcons name="medical-information" size={22} color="#22D3EE" />
+              </View>
+              <View>
+                <ThemedText className="text-glass-text font-semibold">Primary Doctor</ThemedText>
+                <ThemedText className="text-glass-muted text-sm">Dr. Smith — (555) 123-4567</ThemedText>
+              </View>
+            </View>
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-glass-cyan/20 items-center justify-center">
+                <MaterialIcons name="face" size={22} color="#22D3EE" />
+              </View>
+              <View>
+                <ThemedText className="text-glass-text font-semibold">Caregiver</ThemedText>
+                <ThemedText className="text-glass-muted text-sm">Sarah — Check-ins daily</ThemedText>
+              </View>
+            </View>
+            <View className="flex-row items-center gap-3">
+              <View className="w-10 h-10 rounded-full bg-glass-cyan/20 items-center justify-center">
+                <MaterialIcons name="groups" size={22} color="#22D3EE" />
+              </View>
+              <View>
+                <ThemedText className="text-glass-text font-semibold">Family Contact</ThemedText>
+                <ThemedText className="text-glass-muted text-sm">Available for calls & visits</ThemedText>
+              </View>
+            </View>
+          </View>
+        </View>
+
+        {/* Care Resources */}
+        <View>
+          <ThemedText className="text-lg font-bold text-glass-text mb-4">
+            Care Resources
+          </ThemedText>
+          <View className="gap-3">
+            {CARE_RESOURCES.map((item) => (
+              <Pressable
+                key={item.label}
+                className="bg-glass-card border border-glass-border rounded-[18px] p-4 flex-row items-center gap-4 active:opacity-90">
+                <MaterialIcons name={item.icon} size={26} color="#22D3EE" />
+                <ThemedText className="flex-1 text-glass-text font-semibold text-[16px]">
+                  {item.label}
+                </ThemedText>
+                <MaterialIcons name="chevron-right" size={24} color="#94A3B8" />
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* Need Help Banner */}
+        <View className="bg-glass-coral/15 border border-glass-coral/40 rounded-[24px] p-5">
+          <View className="flex-row items-center gap-3 mb-2">
+            <MaterialIcons name="support" size={28} color="#FB7185" />
+            <ThemedText className="text-glass-text font-bold text-lg">Need help?</ThemedText>
+          </View>
+          <ThemedText className="text-glass-muted text-[15px] leading-6">
+            If you feel unwell or need assistance, tap Emergency above or call your caregiver. You're
+            not alone.
+          </ThemedText>
+        </View>
+      </ScrollView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
-  },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-});

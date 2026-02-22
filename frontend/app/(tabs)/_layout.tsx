@@ -1,11 +1,14 @@
 import { Tabs } from "expo-router";
 import React from "react";
+import { View } from "react-native";
 import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 
 import { HapticTab } from "@/components/haptic-tab";
+import { VoiceNavButton } from "@/components/voice-nav-button";
 
 export default function TabLayout() {
   return (
+    <View style={{ flex: 1 }}>
     <Tabs
       screenOptions={{
         tabBarActiveTintColor: "#22D3EE", // glass-cyan
@@ -56,5 +59,7 @@ export default function TabLayout() {
         }}
       />
     </Tabs>
+    <VoiceNavButton />
+    </View>
   );
 }
